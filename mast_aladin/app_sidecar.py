@@ -1,10 +1,10 @@
-import solara
 import warnings
 from ipyaladin import Aladin
 from sidecar import Sidecar as UpstreamSidecar
 from mast_table import MastTable
 from mast_aladin.app import MastAladin, gca
 import jdaviz
+from IPython.display import display
 
 try:
     from jdaviz.core.helpers import ConfigHelper
@@ -217,35 +217,17 @@ class AppSidecarManager:
         return anchor
 
     def _display_sidecar_contents(self, apps, height):
-        @solara.component
-        def SidecarContents(apps):
-            style = f"height={height} !important;"
-
-            with solara.Columns(len(apps) * [1], gutters_dense=True) as main:
-                for app in apps:
-
-                    if is_aladin(app):
-                        # MastAladin:
-                        with solara.Column(gap='0px', style=style):
-                            solara.display(app)
-
-                    elif is_jdaviz(app):
-                        # jdaviz:
-                        with solara.Column(gap='0px', style=style):
-                            solara.display(app._app)
-
-                    else:
-                        # other:
-                        with solara.Column(gap='0px'):
-                            solara.display(app)
-
-                    set_app_height(app, height)
-
-            return main
-
+        """
+        Display apps in their sidecars using IPython display.
+        """
         for app in apps:
+            set_app_height(app, height)
+
             with app.sidecar:
-                solara.display(SidecarContents(apps=[app]))
+                if is_jdaviz(app):
+                    display(app._app)
+                else:
+                    display(app)
 
     def close_all(self):
         """
